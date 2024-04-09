@@ -25,13 +25,32 @@ let myStream;
 let peersStream;
 let muted = false;
 let cameraOn = true;
-
 let currentRoomName;
 /** @type {RTCPeerConnection} */
 let myPeerConnection;
 
 /** @type {RTCDataChannel} */
 let myDataChannel;
+
+// async function getCameras() {
+//   try {
+//     const devices = await navigator.mediaDevices.enumerateDevices();
+//     const cameras = devices.filter((device) => device.kind === "videoinput");
+//     cameras.forEach((camera) => {
+//       const option = document.createElement("option");
+//       option.value = camera.deviceId;
+//       option.innerText = camera.label;
+//       camerasSelect.appendChild(option);
+//     });
+
+//     const option = document.createElement("option");
+//     option.value = "screen";
+//     option.innerText = "화면 공유";
+//     camerasSelect.appendChild(option);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
 
 async function getCameras() {
   try {
@@ -47,10 +66,6 @@ async function getCameras() {
       }
       camerasSelect.appendChild(option);
     });
-    const option = document.createElement("option");
-    option.value = "screen";
-    option.innerText = "화면 공유";
-    camerasSelect.appendChild(option);
   } catch (e) {
     console.log(e);
   }
@@ -80,7 +95,6 @@ async function getMedia(deviceId) {
 
 //getMedia();
 
-// 오디오 뮤트 버튼
 function handleMuteClick() {
   myStream
     .getAudioTracks()
@@ -91,7 +105,6 @@ function handleMuteClick() {
   } else muteBtn.innerText = "Mute";
 }
 
-// 카메라 온오프 버튼
 function handleCameraClick() {
   myStream
     .getVideoTracks()
@@ -101,29 +114,26 @@ function handleCameraClick() {
   else cameraBtn.innerText = "Turn Camera On";
 }
 
-// 카메라 옵션을 변경했을 때 뮤트와 카메라 온오프 상태 동기화
-function setMuteandCamera() {
-  const videoTracks = myStream.getVideoTracks();
-  const audioTracks = myStream.getAudioTracks();
-  if (cameraOn) cameraBtn.innerText = "Turn Camera Off";
-  else cameraBtn.innerText = "Turn Camera On";
-
-  videoTracks.forEach((track) => {
-    track.enabled = cameraOn;
-  });
-
-  if (muted) {
-    muteBtn.innerText = "Unmute";
-  } else muteBtn.innerText = "Mute";
-
-  audioTracks.forEach((track) => {
-    track.enabled = cameraOn;
-  });
-}
-
 muteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
 camerasSelect.addEventListener("input", handleCameraChange);
+
+// async function handleCameraChange() {
+//   if (camerasSelect.value == "screen") {
+//     console.log("화면 공유");
+//     startScreenSharing();
+//     return;
+//   }
+//   await getMedia(camerasSelect.value);
+//   if (myPeerConnection) {
+//     console.log("카메라 교체");
+//     const videoTrack = myStream.getVideoTracks()[0];
+//     const videoSender = myPeerConnection
+//       .getSenders()
+//       .find((sender) => sender.track.kind === "video");
+//     videoSender.replaceTrack(videoTrack);
+//   }
+// }
 
 async function handleCameraChange() {
   if (camerasSelect.value == "screen") {
@@ -139,7 +149,6 @@ async function handleCameraChange() {
       .getSenders()
       .find((sender) => sender.track.kind === "video");
     videoSender.replaceTrack(videoTrack);
-    setMuteandCamera();
   }
 }
 
@@ -443,19 +452,3 @@ async function captureScreen() {
     return null;
   }
 }
-
-// 각 버튼을 가져옵니다.
-const blackBtn = document.querySelector(".color-btn.black");
-const redBtn = document.querySelector(".color-btn.red");
-const greenBtn = document.querySelector(".color-btn.green");
-const whiteBtn = document.querySelector(".color-btn.white");
-
-function buttonPressed() {
-  console.log("Button pressed!");
-}
-
-// 각 버튼에 클릭 이벤트 리스너를 추가하여 buttonPressed() 함수를 실행합니다.
-blackBtn.addEventListener("click", buttonPressed);
-redBtn.addEventListener("click", buttonPressed);
-greenBtn.addEventListener("click", buttonPressed);
-whiteBtn.addEventListener("click", buttonPressed);
